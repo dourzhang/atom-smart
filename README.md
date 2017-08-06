@@ -1,0 +1,5 @@
+atom-smart
+==============
+    smart sample
+    
+    
