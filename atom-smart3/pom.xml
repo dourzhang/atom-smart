@@ -8,11 +8,18 @@
     <artifactId>atom-smart3</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <packaging>war</packaging>
+
     <dependencies>
         <dependency>
             <groupId>com.watent</groupId>
             <artifactId>atom-smart-framework</artifactId>
             <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>jstl</groupId>
+            <artifactId>jstl</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 

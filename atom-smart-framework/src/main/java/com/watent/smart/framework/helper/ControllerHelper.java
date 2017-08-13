@@ -5,6 +5,8 @@ import com.watent.smart.framework.bean.Handler;
 import com.watent.smart.framework.bean.Request;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -16,6 +18,7 @@ import java.util.Set;
  */
 public class ControllerHelper {
 
+    private static final Logger logger = LoggerFactory.getLogger(ConfigHelper.class);
 
     private static final Map<Request, Handler> ACTION_MAP = new HashMap<>();
 
@@ -26,6 +29,7 @@ public class ControllerHelper {
     private static void init() {
         Set<Class<?>> controllerClassSet = ClassHelper.getControllerClassSet();
         if (CollectionUtils.isEmpty(controllerClassSet)) {
+            logger.warn("No Controller Class  config");
             return;
         }
         for (Class<?> controllerClass : controllerClassSet) {
@@ -39,7 +43,7 @@ public class ControllerHelper {
                 }
                 Action action = method.getAnnotation(Action.class);
                 String mapping = action.value();
-                if (!mapping.matches("\\w+/\\w")) {
+                if (!mapping.matches("\\w+:/\\w+")) {
                     continue;
                 }
                 String[] array = mapping.split(":");

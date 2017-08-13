@@ -57,7 +57,7 @@ public class ConfigHelper {
      *
      * @return BasePackage
      */
-    public static String getJdbcAppBasePackage() {
+    public static String getAppBasePackage() {
 
         return PropsUtil.getString(CONFIG_PROPS, ConfigConstant.APP_BASE_PACKAGE);
     }
@@ -67,7 +67,7 @@ public class ConfigHelper {
      *
      * @return JspPath
      */
-    public static String getJdbcAppJspPath() {
+    public static String getAppJspPath() {
 
         return PropsUtil.getString(CONFIG_PROPS, ConfigConstant.APP_JSP_PATH);
     }
@@ -77,7 +77,7 @@ public class ConfigHelper {
      *
      * @return AssertPath
      */
-    public static String getJdbcAssertPath() {
+    public static String getAppAssertPath() {
 
         return PropsUtil.getString(CONFIG_PROPS, ConfigConstant.APP_ASSET_PATH);
     }

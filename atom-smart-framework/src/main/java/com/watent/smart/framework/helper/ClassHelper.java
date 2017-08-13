@@ -15,7 +15,7 @@ public class ClassHelper {
     private static final Set<Class<?>> CLASS_SET;
 
     static {
-        String basePackage = ConfigHelper.getJdbcAppBasePackage();
+        String basePackage = ConfigHelper.getAppBasePackage();
         CLASS_SET = ClassUtil.getClassSet(basePackage);
     }
 

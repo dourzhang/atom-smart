@@ -24,7 +24,7 @@ public class ClassUtil {
     /**
      * 获取类加载器
      *
-     * @return 类加载器ø
+     * @return 类加载器
      */
     public static ClassLoader getClassLoader() {
 
@@ -100,11 +100,10 @@ public class ClassUtil {
 
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("get class set failure", e);
+            throw new RuntimeException(e);
         }
-
-
-        return null;
+        return classSet;
     }
 
     private static void addClass(Set<Class<?>> classSet, String packagePath, String packageName) {
@@ -124,6 +123,16 @@ public class ClassUtil {
                     className = packageName + "." + className;
                 }
                 doAddClass(classSet, className);
+            } else {
+                String subPackagePath = fileName;
+                if (StringUtil.isNotEmpty(packagePath)) {
+                    subPackagePath = packagePath + "/" + subPackagePath;
+                }
+                String subPackageName = fileName;
+                if (StringUtil.isNotEmpty(packageName)) {
+                    subPackageName = packageName + "." + subPackageName;
+                }
+                addClass(classSet, subPackagePath, subPackageName);
             }
 
         }
