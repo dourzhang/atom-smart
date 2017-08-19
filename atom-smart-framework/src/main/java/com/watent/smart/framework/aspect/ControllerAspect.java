@@ -25,7 +25,7 @@ public class ControllerAspect extends AspectProxy {
     }
 
     @Override
-    public void after(Class<?> cls, Method method, Object[] params) throws Throwable {
+    public void after(Class<?> cls, Method method, Object[] params, Object result) throws Throwable {
         logger.debug("time:{}", System.currentTimeMillis() - begin);
         logger.debug("--------end-----------");
     }

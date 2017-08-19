@@ -43,6 +43,7 @@ public class DispatcherServlet extends HttpServlet {
         ServletContext servletContext = servletConfig.getServletContext();
         //注册处理Jsp的Servlet
         ServletRegistration jspServlet = servletContext.getServletRegistration("jsp");
+        jspServlet.addMapping("/index.jsp");
         jspServlet.addMapping(ConfigHelper.getAppJspPath() + "*");
         //注册处理静态资源的默认 Servlet
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
@@ -109,7 +110,7 @@ public class DispatcherServlet extends HttpServlet {
                 request.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(request, response);
             }
         }
-        if (result instanceof Data) {
+        else if (result instanceof Data) {
             Data data = (Data) result;
             Object model = data.getModel();
             if (null == model) {
