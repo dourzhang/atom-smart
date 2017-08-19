@@ -1,9 +1,11 @@
 package com.watent.smart.framework.helper;
 
 import com.watent.smart.framework.annotation.Aspect;
+import com.watent.smart.framework.annotation.Service;
 import com.watent.smart.framework.proxy.AspectProxy;
 import com.watent.smart.framework.proxy.Proxy;
 import com.watent.smart.framework.proxy.ProxyManager;
+import com.watent.smart.framework.proxy.TransactionProxy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +33,7 @@ public class AopHelper {
             logger.error("aop failure", e);
         }
     }
-    
+
     //目标类集合
     private static Set<Class<?>> createTargetClassSet(Aspect aspect) throws Exception {
 
@@ -50,6 +52,14 @@ public class AopHelper {
     private static Map<Class<?>, Set<Class<?>>> createProxyMap() throws Exception {
 
         Map<Class<?>, Set<Class<?>>> proxyMap = new HashMap<>();
+
+        addAspectProxy(proxyMap);
+        addTransactionProxy(proxyMap);
+        return proxyMap;
+    }
+
+    //添加普通切面代理
+    private static void addAspectProxy(Map<Class<?>, Set<Class<?>>> proxyMap) throws Exception {
         Set<Class<?>> proxyClassSet = ClassHelper.getClassSetBySuper(AspectProxy.class);
         for (Class<?> proxyClass : proxyClassSet) {
             if (proxyClass.isAnnotationPresent(Aspect.class)) {
@@ -58,7 +68,13 @@ public class AopHelper {
                 proxyMap.put(proxyClass, targetClassSet);
             }
         }
-        return proxyMap;
+    }
+
+    //添加事物代理
+    private static void addTransactionProxy(Map<Class<?>, Set<Class<?>>> proxyMap) {
+
+        Set<Class<?>> serviceClassSet = ClassHelper.getClassSetByAnnotation(Service.class);
+        proxyMap.put(TransactionProxy.class, serviceClassSet);
     }
 
     /**
