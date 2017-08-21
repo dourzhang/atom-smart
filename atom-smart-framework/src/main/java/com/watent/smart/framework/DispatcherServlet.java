@@ -4,11 +4,10 @@ import com.watent.smart.framework.bean.Data;
 import com.watent.smart.framework.bean.Handler;
 import com.watent.smart.framework.bean.Param;
 import com.watent.smart.framework.bean.View;
-import com.watent.smart.framework.helper.BeanHelper;
-import com.watent.smart.framework.helper.ConfigHelper;
-import com.watent.smart.framework.helper.ControllerHelper;
-import com.watent.smart.framework.helper.HelpLoader;
-import com.watent.smart.framework.util.*;
+import com.watent.smart.framework.helper.*;
+import com.watent.smart.framework.util.JsonUtil;
+import com.watent.smart.framework.util.ReflectionUtil;
+import com.watent.smart.framework.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,6 +46,8 @@ public class DispatcherServlet extends HttpServlet {
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
         defaultServlet.addMapping("/favicon.ico");
         defaultServlet.addMapping(ConfigHelper.getAppAssertPath() + "*");
+
+        UploadHelper.init(servletContext);
     }
 
     @Override
@@ -57,6 +56,10 @@ public class DispatcherServlet extends HttpServlet {
         String requestMethod = request.getMethod().toLowerCase();
         String requestPath = request.getPathInfo();
 
+        if (requestPath.equals("/favicon.ico")) {
+            return;
+        }
+
         Handler handler = ControllerHelper.getHandler(requestMethod, requestPath);
         if (null == handler) {
             logger.warn("No mapped handler for : {}", requestPath);
@@ -64,42 +67,32 @@ public class DispatcherServlet extends HttpServlet {
         }
         Class<?> controllerClass = handler.getControllerClass();
         Object controllerBean = BeanHelper.getBean(controllerClass);
-        //创建请求参数对象
-        Map<String, Object> paramMap = new HashMap<>();
-        Enumeration<String> paramNames = request.getParameterNames();
-        while (paramNames.hasMoreElements()) {
-            String paramName = paramNames.nextElement();
-            String paramValue = request.getParameter(paramName);
-            paramMap.put(paramName, paramValue);
-        }
-        String body = CodecUtil.decodeURL(StreamUtil.getString(request.getInputStream()));
-        if (StringUtil.isNotEmpty(body)) {
-            String[] params = StringUtil.splitString(body, "&");
-            if (ArrayUtil.isEmpty(params)) {
-                for (String param : params) {
-                    String[] array = StringUtil.splitString(param, "=");
-                    if (ArrayUtil.isEmpty(array) || array.length != 2) {
-                        continue;
-                    }
-                    String paramName = array[0];
-                    String paramValue = array[1];
-                    paramMap.put(paramName, paramValue);
-                }
-            }
 
+        Param param;
+        if (UploadHelper.isMultipart(request)) {
+            param = UploadHelper.createParam(request);
+        } else {
+            param = RequestHelper.createParam(request);
         }
-        Param param = new Param(paramMap);
-        //调用Action方法
+
+        Object result;
         Method actionMethod = handler.getActionMethod();
-        Object result = ReflectionUtil.invokeMethod(controllerBean, actionMethod, param);
-        //处理Action返回值
+        if (param.isEmpty()) {
+            result = ReflectionUtil.invokeMethod(controllerBean, actionMethod);
+        } else {
+            result = ReflectionUtil.invokeMethod(controllerBean, actionMethod, param);
+        }
+
         if (result instanceof View) {
-            //返回JSP
-            View view = (View) result;
-            String path = view.getPath();
-            if (StringUtil.isEmpty(path)) {
-                return;
-            }
+            handleViewResult((View) result, request, response);
+        } else if (result instanceof Data) {
+            handleDataResult((Data) result, response);
+        }
+    }
+
+    private void handleViewResult(View view, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        String path = view.getPath();
+        if (StringUtil.isNotEmpty(path)) {
             if (path.startsWith("/")) {
                 response.sendRedirect(request.getContextPath() + path);
             } else {
@@ -110,12 +103,11 @@ public class DispatcherServlet extends HttpServlet {
                 request.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).forward(request, response);
             }
         }
-        else if (result instanceof Data) {
-            Data data = (Data) result;
-            Object model = data.getModel();
-            if (null == model) {
-                return;
-            }
+    }
+
+    private void handleDataResult(Data data, HttpServletResponse response) throws IOException {
+        Object model = data.getModel();
+        if (model != null) {
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
@@ -125,4 +117,5 @@ public class DispatcherServlet extends HttpServlet {
             writer.close();
         }
     }
+
 }

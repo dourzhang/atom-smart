@@ -73,5 +73,12 @@
             <artifactId>cglib</artifactId>
             <version>3.2.5</version>
         </dependency>
+        <!-- file upload -->
+        <dependency>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.2</version>
+        </dependency>
+
     </dependencies>
 </project>

@@ -82,4 +82,11 @@ public class ConfigHelper {
         return PropsUtil.getString(CONFIG_PROPS, ConfigConstant.APP_ASSET_PATH);
     }
 
+    /**
+     * 获取应用上传限制
+     */
+    public static int getAppUploadLimit(){
+        return PropsUtil.getInt(CONFIG_PROPS, ConfigConstant.APP_UPLOAD_LIMIT, 10);
+    }
+
 }
